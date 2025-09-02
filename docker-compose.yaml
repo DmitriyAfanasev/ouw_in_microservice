@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: developer
+      RABBITMQ_DEFAULT_PASS: password
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  user_db_service:
+    image: postgres:17
+    container_name: user_db
+    hostname: ${POSTGRES_HOST_USER}
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_USER}
+      POSTGRES_DB: ${POSTGRES_DB_USER}
+    ports:
+      - "${POSTGRES_PORT_USER}:5432"
+    volumes:
+      - user_db_data:/var/lib/postgresql/data
+
+#  order_db:
+#    image: postgres:17
+#    container_name: order_db
+#    hostname: ${POSTGRES_HOST_ORDER}
+#    restart: unless-stopped
+#    environment:
+#      POSTGRES_USER: ${POSTGRES_USER_ORDER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_ORDER}
+#      POSTGRES_DB: ${POSTGRES_DB_ORDER}
+#    ports:
+#      - "${POSTGRES_PORT_ORDER}:5432"
+#    volumes:
+#      - order_db_data:/var/lib/postgresql/data
+
+volumes:
+  user_db_data:
+#  order_db_data:

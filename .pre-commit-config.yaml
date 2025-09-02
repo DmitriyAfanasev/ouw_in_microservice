@@ -1,0 +1,33 @@
+repos:
+  # --- ruff (линтер + форматтер) ---
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.8
+    hooks:
+      - id: ruff
+        args: [--fix]   # автофикс простых ошибок
+      - id: ruff-format
+
+  # --- mypy (статическая типизация) ---
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.2   # актуальная версия mypy
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - sqlalchemy[mypy]   # типы для SQLAlchemy
+          - pydantic           # типы для Pydantic
+          - types-requests     # типы для requests (часто полезно)
+        args:
+          - --disallow-untyped-defs
+          - --disallow-incomplete-defs
+          - --check-untyped-defs
+          - --no-implicit-optional
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+      - id: end-of-file-fixer
+      - id: trailing-whitespace

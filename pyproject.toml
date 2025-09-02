@@ -1,0 +1,87 @@
+[project]
+name = "uow-in-microservice"
+version = "0.1.0"
+description = "Практика написания микросервисов с использованием UOW и паттенрна Transactional outbox"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "asyncpg>=0.30.0",
+    "dishka>=1.6.0",
+    "fastapi>=0.116.1",
+    "faststream[cli,rabbit]>=0.5.48",
+    "pydantic-settings>=2.10.1",
+    "pydantic[email]>=2.11.7",
+    "sqlalchemy>=2.0.43",
+    "uvicorn>=0.35.0",
+]
+[tool.ruff]
+# общие настройки ruff (и для format, и для lint)
+line-length = 100
+target-version = "py312"
+exclude = [
+    ".git",
+    ".venv",
+    "venv",
+    "migrations", # если используешь alembic — чтобы не ругался на автоген
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
+
+[tool.ruff.lint]
+# что проверяем: базовые ошибки + «полезные» плугины
+select = [
+    "E", # pycodestyle
+    "F", # pyflakes
+    "I", # isort (упорядочивание импортов)
+    "B", # flake8-bugbear
+    "UP", # pyupgrade
+    "ASYNC",
+    "A", # flake8-builtins
+    "C4", # flake8-comprehensions
+    "RET", # flake8-return
+    "SIM", # flake8-simplify
+    "PTH", # flake8-use-pathlib
+    "RUF", # правила ruff
+]
+ignore = [
+    "E501", # длину строки контролируем форматтером
+]
+# для тестов обычно снижают строгость:
+per-file-ignores = { "tests/**" = ["S101", "PLR2004"] }  # пример, если появятся доп. плагины
+
+[tool.mypy]
+ignore_missing_imports = true
+python_version = "3.12"
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+strict_equality = true
+# включи, если хочешь максимально строгую проверку:
+#strict = true
+
+# Плагины для SQLAlchemy и Pydantic (если используешь)
+plugins = [
+    "sqlalchemy.ext.mypy.plugin",
+    "pydantic.mypy",
+]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-q"
+testpaths = ["tests"]
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
