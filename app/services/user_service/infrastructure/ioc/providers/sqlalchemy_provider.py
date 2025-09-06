@@ -9,12 +9,8 @@ from sqlalchemy.ext.asyncio import (
 )
 
 
-class PGDatabaseProvider(Provider):
-    def __init__(
-        self,
-        dsn: str,
-        echo: bool = False,
-    ) -> None:
+class SqlAlchemyPostgresDatabaseProvider(Provider):
+    def __init__(self, dsn: str, echo: bool = False) -> None:
         super().__init__(scope=Scope.APP)
         self._dsn = dsn
         self._echo = echo
@@ -32,7 +28,7 @@ class PGDatabaseProvider(Provider):
         return async_sessionmaker(bind=engine, expire_on_commit=False, autoflush=False)
 
 
-class RequestDBProvider(Provider):
+class SqlAlchemyAsyncSessionDBProvider(Provider):
     def __init__(self) -> None:
         super().__init__(scope=Scope.REQUEST)
 

@@ -4,7 +4,6 @@ from decimal import Decimal
 
 @dataclass
 class CreateUserCommand:
-    # id: UUID
     username: str
     first_name: str
     last_name: str

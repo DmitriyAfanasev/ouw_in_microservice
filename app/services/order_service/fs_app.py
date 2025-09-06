@@ -27,7 +27,7 @@ class UserIsRegister(BaseModel):
     correlation_id: str
 
 
-@broker.subscriber(USER_CREATED_Q, exchange=USER_EVENTS_EX)
+@broker.subscriber("user.created")
 async def new_user(user_data: UserIsRegister, logger: Logger) -> None:
     """Get new user from the broker"""
     logger.info("New user: %s", user_data)

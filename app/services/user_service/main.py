@@ -2,21 +2,15 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 import uvicorn
-from dishka import make_async_container
+from dishka import AsyncContainer
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
-from sqlalchemy.ext.asyncio import create_async_engine
+from faststream.rabbit import RabbitBroker
+from sqlalchemy.ext.asyncio import AsyncEngine
 
-from app.core.settings import settings
 from app.services.user_service.api.v1.routes import router as users_router
-from app.services.user_service.infrastructure.db.providers import (
-    PGDatabaseProvider,
-    RequestDBProvider,
-)
-from app.services.user_service.infrastructure.messaging.providers import (
-    MessagingProvider,
-)
-from app.services.user_service.infrastructure.providers import UserServiceProvider
+from app.services.user_service.infrastructure.db.models import Base
+from app.services.user_service.infrastructure.ioc.containers import get_container
 
 DOC = """
 # User Service
@@ -28,13 +22,20 @@ Publishes domain events to RabbitMQ (`user.created`).
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
-    engine = create_async_engine(settings.user_pg.user_db_dsn, echo=settings.SQL_ECHO)
-    async with engine.begin() as conn:
-        from app.services.user_service.infrastructure.db.models import Base
+    container: AsyncContainer = get_container()
 
+    engine = await container.get(AsyncEngine)
+    broker = await container.get(RabbitBroker)
+
+    await broker.connect()
+    # TODO: Завести alembic для миграций
+    async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
     yield
-    await engine.dispose()
+    await broker.stop()
+
+    await container.close()  # закроет engine, сессии и т.д.
 
 
 def create_app() -> FastAPI:
@@ -46,13 +47,7 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
 
-    container = make_async_container(
-        PGDatabaseProvider(dsn=settings.user_pg.user_db_dsn, echo=settings.SQL_ECHO),
-        RequestDBProvider(),
-        MessagingProvider(url=settings.rabbit.rabbitmq_url),
-        UserServiceProvider(),
-    )
-
+    container = get_container()
     setup_dishka(container, application)
     application.include_router(users_router)
     return application
@@ -63,3 +58,5 @@ app = create_app()
 
 if __name__ == "__main__":
     uvicorn.run("app.services.user_service.main:app", host="127.0.0.1", port=8000, reload=True)
+# TODO: сделать доп провайдеры для создания настроек для Алхимии и фастапи.
+# TODO: сделать тесты

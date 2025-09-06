@@ -36,6 +36,8 @@ class User(TimestampMixin, Base):
             last_name=self.last_name,
             phone_number=self.phone_number,
             wallet=self.wallet,
+            created_at=self.created_at,
+            updated_at=self.updated_at,
         )
 
     @classmethod

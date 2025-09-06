@@ -2,39 +2,34 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
-from faststream.rabbit import ExchangeType, RabbitExchange
-
-from app.services.user_service.domain.entities import User
+from app.services.user_service.domain.entities import User as UserEntity
 from app.services.user_service.domain.exceptions import (
     EmailAlreadyExists,
     UsernameAlreadyExists,
 )
-from app.services.user_service.infrastructure.db.models import User as UserModel
 from app.services.user_service.infrastructure.messaging.events import UserCreated
 
 if TYPE_CHECKING:
-    from faststream.rabbit import RabbitBroker
-
     from app.services.user_service.domain.commands import CreateUserCommand
-    from app.services.user_service.infrastructure.db.repositories import UserRepository
-    from app.services.user_service.infrastructure.db.uow import UnitOfWork
-
-
-USER_EVENTS_EX = RabbitExchange("user.events", type=ExchangeType.TOPIC, durable=True)
+    from app.services.user_service.domain.ports import (
+        EventPublisherProtocol,
+        UnitOfWorkProtocol,
+        UserRepositoryProtocol,
+    )
 
 
 class CreateUserUseCase:
     def __init__(
         self,
-        uow: "UnitOfWork",
-        repo: "UserRepository",
-        broker: "RabbitBroker",
+        uow: "UnitOfWorkProtocol",
+        repo: "UserRepositoryProtocol",
+        event_publisher: "EventPublisherProtocol",
     ) -> None:
         self.uow = uow
         self.repo = repo
-        self.broker = broker
+        self.event_publisher = event_publisher
 
-    async def execute(self, cmd: "CreateUserCommand") -> UserModel:
+    async def execute(self, cmd: "CreateUserCommand") -> UserEntity:
         async with self.uow:
             existing = await self.repo.get_by_email(cmd.email)
             if existing:
@@ -44,7 +39,7 @@ class CreateUserUseCase:
             if existing:
                 raise UsernameAlreadyExists(username=cmd.username)
 
-            user = User(
+            user = UserEntity(
                 username=cmd.username,
                 first_name=cmd.first_name,
                 last_name=cmd.last_name,
@@ -54,7 +49,6 @@ class CreateUserUseCase:
             )
 
             model = await self.repo.add(user)
-            await self.uow.session.flush()
 
             event = UserCreated(
                 user_id=user.id,
@@ -64,10 +58,9 @@ class CreateUserUseCase:
                 occurred_at=datetime.now(UTC),
                 correlation_id=str(uuid4()),
             )
-            await self.broker.publish(
+            await self.event_publisher.publish(
                 event.model_dump(),
-                exchange=USER_EVENTS_EX,
                 routing_key="user.created",
             )
 
-            return model
+            return model.to_entity()
