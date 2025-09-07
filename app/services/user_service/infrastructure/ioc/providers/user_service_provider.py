@@ -3,6 +3,7 @@ from faststream.rabbit import RabbitBroker
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.services.user_service.domain.ports import (
+    CreateUserUseCaseProtocol,
     EventPublisherProtocol,
     UnitOfWorkProtocol,
     UserRepositoryProtocol,
@@ -37,6 +38,6 @@ class UserServiceProvider(Provider):
         uow: UnitOfWorkProtocol,
         user_repo: UserRepositoryProtocol,
         event_publisher: EventPublisherProtocol,
-    ) -> CreateUserUseCase:
-        """Фабрика для создания user_case создания пользователя"""
+    ) -> CreateUserUseCaseProtocol:
+        """Фабрика для создания user_case добавления пользователя"""
         return CreateUserUseCase(uow=uow, repo=user_repo, event_publisher=event_publisher)

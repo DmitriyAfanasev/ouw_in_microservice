@@ -35,6 +35,7 @@ class UserCreateSchema(UserSchema): ...
 
 
 class UserUpdateSchema(BaseModel):
+    id: UUID
     username: Username | None = None
     first_name: FirstName | None = None
     last_name: LastName | None = None

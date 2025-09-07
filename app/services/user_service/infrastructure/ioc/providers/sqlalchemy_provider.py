@@ -25,7 +25,11 @@ class SqlAlchemyPostgresDatabaseProvider(Provider):
 
     @provide(scope=Scope.APP)
     def session_factory(self, engine: AsyncEngine) -> async_sessionmaker[AsyncSession]:
-        return async_sessionmaker(bind=engine, expire_on_commit=False, autoflush=False)
+        return async_sessionmaker(
+            bind=engine,
+            expire_on_commit=False,
+            autoflush=False,
+        )
 
 
 class SqlAlchemyAsyncSessionDBProvider(Provider):

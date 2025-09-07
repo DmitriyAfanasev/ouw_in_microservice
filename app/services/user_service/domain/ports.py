@@ -7,6 +7,7 @@ from app.services.user_service.domain.entities import User as UserEntity
 if TYPE_CHECKING:
     from app.services.user_service.domain.commands import CreateUserCommand
     from app.services.user_service.infrastructure.db.models import User as UserModel
+    from app.services.user_service.schemas import UserUpdateSchema
 
 
 class UserRepositoryProtocol(Protocol):
@@ -14,15 +15,18 @@ class UserRepositoryProtocol(Protocol):
     async def add(self, user: UserEntity) -> "UserModel": ...
 
     @abstractmethod
-    async def get_by_email(self, email: str) -> UserEntity | None: ...
+    async def get_by_email(self, email: str) -> UserEntity: ...
 
     @abstractmethod
-    async def get_by_username(self, username: str) -> UserEntity | None: ...
+    async def get_by_username(self, username: str) -> UserEntity: ...
+
+    @abstractmethod
+    async def update_user(self, new_user_data: "UserUpdateSchema") -> UserEntity: ...
 
 
 class CreateUserUseCaseProtocol(Protocol):
     @abstractmethod
-    async def execute(self, cmd: "CreateUserCommand") -> "UserModel": ...
+    async def execute(self, cmd: "CreateUserCommand") -> UserEntity: ...
 
 
 class UnitOfWorkProtocol(Protocol):

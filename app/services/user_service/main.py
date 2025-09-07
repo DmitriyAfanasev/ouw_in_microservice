@@ -60,3 +60,5 @@ if __name__ == "__main__":
     uvicorn.run("app.services.user_service.main:app", host="127.0.0.1", port=8000, reload=True)
 # TODO: сделать доп провайдеры для создания настроек для Алхимии и фастапи.
 # TODO: сделать тесты
+# TODO: добавить api-ключи как авторизацию
+# TODO: добавить Rate Limiting в FastAPI (например как ключ в редисе)
