@@ -2,6 +2,8 @@ from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
+from sqlalchemy.exc import NoResultFound
+
 from app.services.user_service.domain.entities import User as UserEntity
 from app.services.user_service.domain.exceptions import (
     EmailAlreadyExists,
@@ -31,14 +33,14 @@ class CreateUserUseCase:
 
     async def execute(self, cmd: "CreateUserCommand") -> UserEntity:
         async with self.uow:
-            existing = await self.repo.get_by_email(cmd.email)
-            if existing:
-                raise EmailAlreadyExists(email=cmd.email)
-
-            existing = await self.repo.get_by_username(cmd.username)
-            if existing:
-                raise UsernameAlreadyExists(username=cmd.username)
-
+            try:
+                email, username = await self.repo.check_unique_email_and_username(cmd.username, cmd.email)
+                if email:
+                    raise EmailAlreadyExists(email)
+                if username:
+                    raise UsernameAlreadyExists(username)
+            except NoResultFound:
+                ...
             user = UserEntity(
                 username=cmd.username,
                 first_name=cmd.first_name,
@@ -48,7 +50,8 @@ class CreateUserUseCase:
                 wallet=cmd.wallet,
             )
 
-            model = await self.repo.add(user)
+            model = await self.repo.add_user(user)
+            # api_key = await self.repo.create_api_key(user_id=model.id)
 
             event = UserCreated(
                 user_id=user.id,

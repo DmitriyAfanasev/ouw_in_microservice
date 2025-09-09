@@ -1,12 +1,16 @@
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Index, Numeric, String, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.services.user_service.domain.entities import User as UserEntity
 
 from .base import Base
 from .mixins import TimestampMixin
+
+if TYPE_CHECKING:
+    from .api_key_for_user import ApiKey
 
 
 class User(TimestampMixin, Base):
@@ -18,6 +22,12 @@ class User(TimestampMixin, Base):
     wallet: Mapped[Decimal] = mapped_column(
         Numeric(10, 2, asdecimal=True),
         nullable=False,
+    )
+    api_key: Mapped["ApiKey"] = relationship(
+        "ApiKey",
+        back_populates="user",
+        lazy="joined",
+        uselist=False,
     )
 
     __table_args__ = (

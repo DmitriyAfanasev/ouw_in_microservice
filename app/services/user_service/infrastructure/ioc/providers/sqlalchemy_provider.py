@@ -41,8 +41,5 @@ class SqlAlchemyAsyncSessionDBProvider(Provider):
         self,
         session_factory: async_sessionmaker[AsyncSession],
     ) -> AsyncIterator[AsyncSession]:
-        session = session_factory()
-        try:
+        async with session_factory() as session:
             yield session
-        finally:
-            await session.close()

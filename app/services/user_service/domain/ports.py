@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING, Protocol
 from app.services.user_service.domain.entities import User as UserEntity
 
 if TYPE_CHECKING:
+    from uuid import UUID
+
     from app.services.user_service.domain.commands import CreateUserCommand
     from app.services.user_service.infrastructure.db.models import User as UserModel
     from app.services.user_service.schemas import UserUpdateSchema
@@ -12,7 +14,7 @@ if TYPE_CHECKING:
 
 class UserRepositoryProtocol(Protocol):
     @abstractmethod
-    async def add(self, user: UserEntity) -> "UserModel": ...
+    async def add_user(self, user: UserEntity) -> "UserModel": ...
 
     @abstractmethod
     async def get_by_email(self, email: str) -> UserEntity: ...
@@ -22,6 +24,17 @@ class UserRepositoryProtocol(Protocol):
 
     @abstractmethod
     async def update_user(self, new_user_data: "UserUpdateSchema") -> UserEntity: ...
+
+    @abstractmethod
+    async def create_api_key(self, user_id: "UUID") -> str: ...
+
+    @abstractmethod
+    async def get_by_api_key(self, api_key: str) -> UserEntity: ...
+
+    @abstractmethod
+    async def check_unique_email_and_username(
+        self, username: str, email: str
+    ) -> tuple[str | None, str | None]: ...
 
 
 class CreateUserUseCaseProtocol(Protocol):

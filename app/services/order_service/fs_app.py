@@ -34,7 +34,3 @@ async def new_user(user_data: UserIsRegister, logger: Logger) -> None:
 
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     logger.info("Mail sent in %s", current_time)
-
-
-if __name__ == "__main__":
-    app.run()

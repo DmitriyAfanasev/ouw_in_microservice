@@ -6,7 +6,7 @@
 ### Если вызывать из директории `order_service`:
 
 ```shell
-  faststream run "fs_app:app" --reload
+  faststream run "fs_app:app" --reload --port 8002
 ```
 
 ## Команда, чтобы поднять документацию на приложение Faststream.

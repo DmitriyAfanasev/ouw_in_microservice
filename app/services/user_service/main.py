@@ -6,10 +6,8 @@ from dishka import AsyncContainer
 from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from faststream.rabbit import RabbitBroker
-from sqlalchemy.ext.asyncio import AsyncEngine
 
 from app.services.user_service.api.v1.routes import router as users_router
-from app.services.user_service.infrastructure.db.models import Base
 from app.services.user_service.infrastructure.ioc.containers import get_container
 
 DOC = """
@@ -23,19 +21,11 @@ Publishes domain events to RabbitMQ (`user.created`).
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     container: AsyncContainer = get_container()
-
-    engine = await container.get(AsyncEngine)
     broker = await container.get(RabbitBroker)
-
     await broker.connect()
-    # TODO: Завести alembic для миграций
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
     yield
     await broker.stop()
-
-    await container.close()  # закроет engine, сессии и т.д.
+    await container.close()
 
 
 def create_app() -> FastAPI:
@@ -60,5 +50,5 @@ if __name__ == "__main__":
     uvicorn.run("app.services.user_service.main:app", host="127.0.0.1", port=8000, reload=True)
 # TODO: сделать доп провайдеры для создания настроек для Алхимии и фастапи.
 # TODO: сделать тесты
-# TODO: добавить api-ключи как авторизацию
 # TODO: добавить Rate Limiting в FastAPI (например как ключ в редисе)
+# TODO: добавить в ответ с регистраци api_key, либо возвратить только его в запросе

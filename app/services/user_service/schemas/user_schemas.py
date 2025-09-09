@@ -49,3 +49,7 @@ class UserResponseSchema(UserSchema):
     id: UUID
     created_at: AwareDatetime
     updated_at: AwareDatetime | None = None
+
+
+class UserRegisterResponse(UserResponseSchema):
+    api_key: str

@@ -14,7 +14,9 @@ services:
       - "15672:15672"
 
   user_db_service:
-    image: postgres:17
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
     container_name: user_db
     hostname: ${POSTGRES_HOST_USER}
     restart: unless-stopped
@@ -26,21 +28,10 @@ services:
       - "${POSTGRES_PORT_USER}:5432"
     volumes:
       - user_db_data:/var/lib/postgresql/data
-
-#  order_db:
-#    image: postgres:17
-#    container_name: order_db
-#    hostname: ${POSTGRES_HOST_ORDER}
-#    restart: unless-stopped
-#    environment:
-#      POSTGRES_USER: ${POSTGRES_USER_ORDER}
-#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD_ORDER}
-#      POSTGRES_DB: ${POSTGRES_DB_ORDER}
-#    ports:
-#      - "${POSTGRES_PORT_ORDER}:5432"
-#    volumes:
-#      - order_db_data:/var/lib/postgresql/data
+    command: >
+      postgres
+      -c shared_preload_libraries=pg_cron
+      -c cron.database_name=${POSTGRES_DB_USER}
 
 volumes:
   user_db_data:
-#  order_db_data:

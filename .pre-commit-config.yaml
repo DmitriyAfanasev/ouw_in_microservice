@@ -4,18 +4,21 @@ repos:
     rev: v0.6.8
     hooks:
       - id: ruff
-        args: [--fix]   # автофикс простых ошибок
+        args: [ --fix ]
+        exclude: 'alembic/versions/'
       - id: ruff-format
+        exclude: 'alembic/versions/'
 
   # --- mypy (статическая типизация) ---
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.2   # актуальная версия mypy
+    rev: v1.11.2
     hooks:
       - id: mypy
+        exclude: 'alembic/versions/'
         additional_dependencies:
-          - sqlalchemy[mypy]   # типы для SQLAlchemy
-          - pydantic           # типы для Pydantic
-          - types-requests     # типы для requests (часто полезно)
+          - sqlalchemy[mypy]
+          - pydantic
+          - types-requests
         args:
           - --disallow-untyped-defs
           - --disallow-incomplete-defs
@@ -26,8 +29,14 @@ repos:
     rev: v4.6.0
     hooks:
       - id: check-yaml
+        exclude: 'alembic/versions/'
       - id: check-json
+        exclude: 'alembic/versions/'
       - id: check-toml
+        exclude: 'alembic/versions/'
       - id: check-added-large-files
+        exclude: 'alembic/versions/'
       - id: end-of-file-fixer
+        exclude: 'alembic/versions/'
       - id: trailing-whitespace
+        exclude: 'alembic/versions/'
